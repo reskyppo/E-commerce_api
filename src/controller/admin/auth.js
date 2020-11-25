@@ -1,12 +1,16 @@
 const User = require("../../models/user");
 const jwt = require("jsonwebtoken");
 
-exports.signup = (req, res) => {
-  User.findOne({ email: req.body.email }).exec((error, user) => {
-    if (user) {
-      return res.status(400).json({ message: "Admin already registered" });
-    }
+exports.signup = async (req, res) => {
+  const user = await User.findOne({
+    email: req.body.email,
   });
+
+  if (user) {
+    return res.status(400).json({
+      message: "admin already exist",
+    });
+  }
 
   const { firstName, lastName, email, password } = req.body;
   const _user = new User({
@@ -33,10 +37,14 @@ exports.signin = (req, res) => {
   User.findOne({ email: req.body.email }).exec((err, user) => {
     if (err) return res.status(400).json({ message: err });
     if (user) {
-      if (user.authenticate(req.body.password ) && user.role === "admin") {
-        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
-          expiresIn: "7d",
-        });
+      if (user.authenticate(req.body.password) && user.role === "admin") {
+        const token = jwt.sign(
+          { _id: user._id, role: user.role },
+          process.env.JWT_SECRET,
+          {
+            expiresIn: "7d",
+          }
+        );
         const { _id, firstName, lastName, email, role, fullName } = user;
         res.status(200).json({
           token,
@@ -49,11 +57,4 @@ exports.signin = (req, res) => {
       return res.status(400).json({ message: "Something when wrong" });
     }
   });
-};
-
-exports.requireSignin = (req, res, next) => {
-  const token = req.headers.authorization;
-  const user = jwt.verify(token, process.env.JWT_SECRET);
-  req.user = user;
-  next();
 };

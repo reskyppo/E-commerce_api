@@ -1,7 +1,6 @@
 const Category = require("../models/category");
 const slugify = require("slugify");
 const { reset } = require("nodemon");
-const category = require("../models/category");
 
 const createCategories = (categories, parentId = null) => {
   const categoryList = [];

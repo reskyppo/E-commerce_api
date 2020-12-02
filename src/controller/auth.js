@@ -11,7 +11,7 @@ exports.signup = async (req, res) => {
       message: "user already exist",
     });
   }
-  
+
   const { firstName, lastName, email, password } = req.body;
   const _user = new User({
     firstName,
@@ -37,9 +37,13 @@ exports.signin = (req, res) => {
     if (err) return res.status(400).json({ message: err });
     if (user) {
       if (user.authenticate(req.body.password)) {
-        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
-          expiresIn: "7d",
-        });
+        const token = jwt.sign(
+          { _id: user._id, role: user.role },
+          process.env.JWT_SECRET,
+          {
+            expiresIn: "7d",
+          }
+        );
         const { _id, firstName, lastName, email, role, fullName } = user;
         res.status(200).json({
           token,
